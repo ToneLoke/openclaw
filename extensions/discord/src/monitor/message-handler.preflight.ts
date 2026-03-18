@@ -64,6 +64,7 @@ import {
   resolveDiscordEffectiveRoute,
 } from "./route-resolution.js";
 import { resolveDiscordSenderIdentity, resolveDiscordWebhookId } from "./sender-identity.js";
+import { isSiblingRateLimited, recordSiblingProcessed } from "./sibling-bot-rate-limiter.js";
 import { resolveDiscordSystemEvent } from "./system-events.js";
 import { isRecentlyUnboundThreadWebhookMessage } from "./thread-bindings.js";
 import { resolveDiscordThreadChannel, resolveDiscordThreadParentInfo } from "./threading.js";
@@ -806,6 +807,17 @@ export async function preflightDiscordMessage(
       });
       return null;
     }
+  }
+
+  // Rate-limit sibling bot messages to prevent cascade amplification.
+  // Human messages are never affected (author.bot guard ensures this only applies to bots).
+  if (author.bot && !sender.isPluralKit) {
+    const siblingConfig = channelConfig?.siblingBots ?? params.discordConfig?.siblingBots ?? {};
+    if (isSiblingRateLimited(params.accountId, messageChannelId, siblingConfig)) {
+      logVerbose(`discord: drop sibling bot message (rate limited) channel=${messageChannelId}`);
+      return null;
+    }
+    recordSiblingProcessed(params.accountId, messageChannelId);
   }
 
   if (author.bot && !sender.isPluralKit && allowBotsMode === "mentions") {

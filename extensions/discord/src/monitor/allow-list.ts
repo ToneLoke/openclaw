@@ -30,6 +30,12 @@ type DiscordChannelOverrideConfig = {
   includeThreadStarter?: boolean;
   autoThread?: boolean;
   autoArchiveDuration?: "60" | "1440" | "4320" | "10080" | 60 | 1440 | 4320 | 10080;
+  /** Rate limiting config for sibling bot messages in this channel. */
+  siblingBots?: {
+    cooldownMs?: number;
+    maxPerWindow?: number;
+    windowMs?: number;
+  };
 };
 
 export type DiscordGuildEntryResolved = {
@@ -404,6 +410,7 @@ function resolveDiscordChannelConfigEntry(
     includeThreadStarter: entry.includeThreadStarter,
     autoThread: entry.autoThread,
     autoArchiveDuration: entry.autoArchiveDuration,
+    siblingBots: entry.siblingBots,
   };
   return resolved;
 }

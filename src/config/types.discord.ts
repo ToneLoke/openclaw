@@ -229,6 +229,15 @@ export type DiscordAccountConfig = {
   proxy?: string;
   /** Allow bot-authored messages to trigger replies (default: false). Set "mentions" to gate on mentions. */
   allowBots?: boolean | "mentions";
+  /** Per-account default rate limiting config for sibling bot messages. */
+  siblingBots?: {
+    /** Minimum ms between processed sibling messages per channel. Default: 30_000 (30s) */
+    cooldownMs?: number;
+    /** Max sibling messages to process per rolling window. Default: 3 */
+    maxPerWindow?: number;
+    /** Rolling window duration in ms. Default: 300_000 (5 min) */
+    windowMs?: number;
+  };
   /**
    * Break-glass override: allow mutable identity matching (names/tags/slugs) in allowlists.
    * Default behavior is ID-only matching.
